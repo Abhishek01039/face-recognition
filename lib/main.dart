@@ -27,7 +27,6 @@ class _FaceDetectState extends State<FaceDetect> {
 
   Future getImage() async {
     final imageFile = await ImagePicker().getImage(source: ImageSource.gallery);
-    // print("image file type ${imageFile.runtimeType}");
     final fbVisionImage = FirebaseVisionImage.fromFile(File(imageFile.path));
     final faceDetector = FirebaseVision.instance.faceDetector();
     final listOfFaces = await faceDetector.processImage(fbVisionImage);
