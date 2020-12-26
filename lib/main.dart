@@ -3,8 +3,9 @@ import 'dart:ui' as ui;
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-final Color color = Colors.cyan;
+const Color _color = Colors.cyan;
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -22,57 +23,78 @@ class FaceDetect extends StatefulWidget {
 }
 
 class _FaceDetectState extends State<FaceDetect> {
-  ui.Image image;
-  List<Rect> rectArr = [];
+  static ui.Image _image;
+  static final List<Rect> _rectArr = [];
+  static bool _backPressCounter = false;
 
-  Future getImage() async {
+  Future _getImage() async {
     final imageFile = await ImagePicker().getImage(source: ImageSource.gallery);
-    final fbVisionImage = FirebaseVisionImage.fromFile(File(imageFile.path));
-    final faceDetector = FirebaseVision.instance.faceDetector();
-    final listOfFaces = await faceDetector.processImage(fbVisionImage);
-    rectArr.clear();
-    for (final face in listOfFaces) {
-      rectArr.add(face.boundingBox);
-    }
-    final bytesFromImageFile = File(imageFile.path).readAsBytesSync();
-    await decodeImageFromList(bytesFromImageFile).then((img) {
-      setState(() {
-        image = img;
+    if (imageFile != null) {
+      final listOfFaces = await FirebaseVision.instance
+          .faceDetector()
+          .processImage(FirebaseVisionImage.fromFile(File(imageFile.path)));
+      _rectArr.clear();
+      for (final _face in listOfFaces) {
+        _rectArr.add(_face.boundingBox);
+      }
+      await decodeImageFromList(File(imageFile.path).readAsBytesSync())
+          .then((_img) {
+        setState(() {
+          _image = _img;
+        });
       });
-    });
+    }
+  }
+
+  Future<bool> _onWillPop() {
+    if (!_backPressCounter) {
+      Fluttertoast.showToast(
+        msg: 'Press again to exit app',
+        backgroundColor: Colors.black,
+      );
+      setState(() {
+        _backPressCounter = true;
+      });
+      return Future.value(false);
+    } else {
+      return Future.value(true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: color,
-        title: Text('TritoneTech Face Detection'),
-      ),
-      body: Container(
-        child: Center(
-          child: FittedBox(
-            child: SizedBox(
-              height: image == null ? height : image.height.toDouble(),
-              width: image == null ? width : image.width.toDouble(),
-              child: CustomPaint(
-                painter: _Painter(
-                  rect: rectArr,
-                  image: image,
+    final _height = MediaQuery.of(context).size.height;
+    final _width = MediaQuery.of(context).size.width;
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: _color,
+          title: Text('TritoneTech Face Detection'),
+        ),
+        body: Container(
+          child: Center(
+            child: FittedBox(
+              child: SizedBox(
+                height: _image == null ? _height : _image.height.toDouble(),
+                width: _image == null ? _width : _image.width.toDouble(),
+                child: CustomPaint(
+                  painter: _Painter(
+                    rect: _rectArr,
+                    image: _image,
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: color,
-        onPressed: () {
-          getImage();
-        },
-        child: Icon(Icons.camera_alt),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: _color,
+          onPressed: () {
+            _getImage();
+          },
+          child: Icon(Icons.camera_alt),
+        ),
       ),
     );
   }
