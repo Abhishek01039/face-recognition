@@ -26,19 +26,17 @@ class _FaceDetectState extends State<FaceDetect> {
   List<Rect> rectArr = [];
 
   Future getImage() async {
-    PickedFile imageFile =
-        await ImagePicker().getImage(source: ImageSource.gallery);
-    print("image file type ${imageFile.runtimeType}");
-    FirebaseVisionImage fbVisionImage =
-        FirebaseVisionImage.fromFile(File(imageFile.path));
-    FaceDetector faceDetector = FirebaseVision.instance.faceDetector();
-    List<Face> listOfFaces = await faceDetector.processImage(fbVisionImage);
+    final imageFile = await ImagePicker().getImage(source: ImageSource.gallery);
+    // print("image file type ${imageFile.runtimeType}");
+    final fbVisionImage = FirebaseVisionImage.fromFile(File(imageFile.path));
+    final faceDetector = FirebaseVision.instance.faceDetector();
+    final listOfFaces = await faceDetector.processImage(fbVisionImage);
     rectArr.clear();
-    for (Face face in listOfFaces) {
+    for (final face in listOfFaces) {
       rectArr.add(face.boundingBox);
     }
-    var bytesFromImageFile = File(imageFile.path).readAsBytesSync();
-    decodeImageFromList(bytesFromImageFile).then((img) {
+    final bytesFromImageFile = File(imageFile.path).readAsBytesSync();
+    await decodeImageFromList(bytesFromImageFile).then((img) {
       setState(() {
         image = img;
       });
@@ -52,7 +50,7 @@ class _FaceDetectState extends State<FaceDetect> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: color,
-        title: Text("TritoneTech Face Detection"),
+        title: Text('TritoneTech Face Detection'),
       ),
       body: Container(
         child: Center(
@@ -89,7 +87,7 @@ class _Painter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    var paint = Paint()
+    final paint = Paint()
       ..color = Colors.red
       ..style = PaintingStyle.stroke
       ..strokeWidth = 7;

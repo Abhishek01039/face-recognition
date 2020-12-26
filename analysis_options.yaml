@@ -1,0 +1,17 @@
+include: package:pedantic/analysis_options.yaml
+
+analyzer:
+  errors:
+    include_file_not_found: ignore
+    lines_longer_than_80_chars: ignore
+    unused_import: error
+linter:
+  rules:
+    prefer_final_locals: true
+    avoid_print: true
+    cancel_subscriptions: true
+    close_sinks: true
+    omit_local_variable_types: true
+    prefer_single_quotes: true
+    use_function_type_syntax: true
+    await_only_futures: true
